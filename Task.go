@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"math"
+
 	//"math"
 
 	"gonum.org/v1/gonum/mat"
@@ -10,8 +12,8 @@ import (
 func main() {
 	// Physics params
 	var (
-		//u1             = func(t float64) float64 { return 0*math.Sin(0.01*t) + 273.15 }
-		u1             = func(t float64) float64 { return 800 + 273.15 }
+		u1 = func(t float64) float64 { return math.Sin(0.01*t) + 273.15 }
+		//u1             = func(t float64) float64 { return 800 + 273.15 }
 		u0     float64 = 0. + 273.15
 		lambda float64 = 42.1
 		cc     float64 = 445.
@@ -30,8 +32,8 @@ func main() {
 
 	// Numeric params
 	var (
-		N, M int     = 50, 600
-		sig  float64 = 1
+		N, M int     = 10, 20
+		sig  float64 = 0.5
 	)
 
 	var tao, h float64 = T1 / float64(M), 1 / float64(N)
@@ -67,7 +69,7 @@ func main() {
 	printArr(y)
 	fmt.Println()
 
-	for j := 0; j < M; j++ {// iterations by time
+	for j := 0; j < M; j++ { // iterations by time
 		t := float64(j+1) * T / float64(M) //moment t for current iteration
 		b := make([]float64, N+1)
 		c := make([]float64, N+1)
@@ -99,10 +101,10 @@ func main() {
 		}
 		d[N] = sig * tao / (h * h) * dp[N]
 		c[N] = -sig*tao/h*gamma1*x[N]*x[N] - 0.5*dx[N] - d[N]
-		phi[N] = (1-sig)*tao/h*gamma1*x[N]*x[N]*y[N] - tao/h*x[N]*x[N]*gamma1*v1(t) - 0.5*dx[N]*y[N] - (1-sig)*tao/(h*h)*dp[N]*(y[N]-y[N-1])
+		phi[N] = (1-sig)*tao/h*gamma1*x[N]*x[N]*y[N] - tao/h*x[N]*x[N]*gamma1*v1(t) - 0.5*dx[N]*y[N] + (1-sig)*tao/(h*h)*dp[N]*(y[N]-y[N-1])
 
-		A.Set(N, N, c[N])
 		A.Set(N, N-1, d[N])
+		A.Set(N, N, c[N])
 		yy.Set(N, 0, phi[N])
 
 		xx.Solve(A, yy)
