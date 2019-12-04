@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math"
+	//"math"
 
 	"gonum.org/v1/gonum/mat"
 )
@@ -10,7 +10,8 @@ import (
 func main() {
 	// Physics params
 	var (
-		u1             = func(t float64) float64 { return math.Sin(0.01*t) + 273.15 }
+		//u1             = func(t float64) float64 { return 0*math.Sin(0.01*t) + 273.15 }
+		u1             = func(t float64) float64 { return 800 + 273.15 }
 		u0     float64 = 0. + 273.15
 		lambda float64 = 42.1
 		cc     float64 = 445.
@@ -19,7 +20,7 @@ func main() {
 		R      float64 = 0.1
 		T      float64 = 60 * 15
 	)
-	v1 := func(t float64) float64 { return (u1(t) - u0) / u0 }
+	v1 := func(t float64) float64 { return (u1(t) - u0) / u0 } // обезрозмірена u
 
 	// Physics trans
 	var (
@@ -29,18 +30,22 @@ func main() {
 
 	// Numeric params
 	var (
-		N, M int     = 10, 40
-		sig  float64 = 0.5
+		N, M int     = 50, 600
+		sig  float64 = 1
 	)
 
 	var tao, h float64 = T1 / float64(M), 1 / float64(N)
+	fmt.Printf("tao = %11.6f", tao)
+	fmt.Print("\n")
+	fmt.Printf("h = %11.6f", h)
+	fmt.Print("\n")
 
 	var x []float64
 	for i := 0; i <= N; i++ {
 		x = append(x, float64(i)*h)
 	}
 
-	var dx = make([]float64, N+1)
+	var dx = make([]float64, N+1) // х хвилька m
 	dx[0] = (x[1]*x[1]*x[1] - x[0]*x[0]*x[0]) / (3 * h)
 	dx[N] = (x[N]*x[N]*x[N] - x[N-1]*x[N-1]*x[N-1]) / (3 * h)
 
@@ -48,10 +53,9 @@ func main() {
 		dx[i] = (x[i+1]*x[i+1]*x[i+1] - x[i-1]*x[i-1]*x[i-1]) / (6 * h)
 	}
 
-	var dp = make([]float64, N+1)
+	var dp = make([]float64, N+1) // p хвилька
 	for i := 1; i <= N; i++ {
-		//dp[i] = (x[i] - h/2) * (x[i] - h/2)
-		dp[i] = (x[i] - h/2)
+		dp[i] = (x[i] - h/2) * (x[i] - h/2)
 	}
 
 	var y = make([]float64, N+1)
@@ -63,8 +67,8 @@ func main() {
 	printArr(y)
 	fmt.Println()
 
-	for j := 0; j < M; j++ {
-		t := float64(j+1) * T / float64(M)
+	for j := 0; j < M; j++ {// iterations by time
+		t := float64(j+1) * T / float64(M) //moment t for current iteration
 		b := make([]float64, N+1)
 		c := make([]float64, N+1)
 		d := make([]float64, N+1)
@@ -116,11 +120,6 @@ func main() {
 func printArr(arr []float64) {
 	var u0 float64 = 273.15
 	for _, x := range arr {
-		fmt.Printf("%14.9f", ((x+1)*u0 - 273.15))
-		//if i != len(arr)-1 {
-		//	fmt.Print("&")
-		//} else {
-		//	fmt.Print(" \\\\")
-		//}
+		fmt.Printf("%11.6f", ((x+1)*u0 - 273.15))
 	}
 }
